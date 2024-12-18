@@ -36,20 +36,27 @@ public class Main {
             }while(!header.isEmpty());
 
             //faccio i controlli e rispondo 
-            if(resource.equals("/")){
-                resource="index.html";
-             }
-
+            if(resource.endsWith("/")){
+                resource += "index.html"; //con endswith rendo generale la cosa, indico che se finisce con / e' un index.html
+            }
             File file =new File("htdocs/"+resource);
+            if(file.isDirectory()){ //controlla se e' un file , mi serve se la risorsa ha il punto (vuol dire che e' un file)
+                out.writeBytes("HTTP/1.1 301 Moved Permanently\n"); //riga di risposta 301 M.P indica che il file esiste e ti reindirizza
+                out.writeBytes("Content-Length: "+0+"\n");//intestazione
+                out.writeBytes("Location:"+resource+"/\n");//creo una funzione per gestire le diverse estensioni di un file
+                out.writeBytes("\n");//riga vuota
+            }
+         
 
 
             if(file.exists()){
                
-                out.writeBytes("HTTP/1.1 200 OK\n");
-                out.writeBytes("Content-Length: "+file.length()+"\n");
-                out.writeBytes("Content-Type:"+getContentType(file)+"\n");
-                out.writeBytes("\n");
-              
+                out.writeBytes("HTTP/1.1 200 OK\n"); //riga di risposta indica che e' andato tutto bene
+                out.writeBytes("Content-Length: "+file.length()+"\n");//intestazione
+                out.writeBytes("Content-Type:"+getContentType(file)+"\n");//creo una funzione per gestire le diverse estensioni di un file
+                out.writeBytes("\n");//riga vuota
+
+              //corpo della risposta
                 InputStream input=new FileInputStream(file);
                 byte[] buf= new byte[8192];
                 int n;
@@ -58,6 +65,7 @@ public class Main {
                 }
                 input.close();
 
+             //gestione del file se non viene trovato
             } else{
                 String msg="File non trovato";
                 out.writeBytes("HTTP/1.1 404 Not Found\n");
